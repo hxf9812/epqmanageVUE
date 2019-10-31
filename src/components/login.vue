@@ -16,6 +16,7 @@
 				</form>
 
 				<button class='btn btn-primary' @click="loginForm">点我登录</button>
+				<button class='btn btn-primary' @click="registerForm">点我注册</button>
 			</div>
 
 			
@@ -31,34 +32,20 @@ export default {
   	return {
 		  account:'',
 		  password:'',
-
   	}
   },
 
   methods:{
-	setCookie(cname,cvalue,exdays)
-		{
+	setCookie(cname,cvalue,exdays){
 		var d = new Date();
 		d.setTime(d.getTime()+(exdays*24*60*60*1000));
 		var expires = "expires="+d.toGMTString();
 		document.cookie = cname + "=" + cvalue + "; " + expires;
-		},
-    getCookie(cname)
-		{
-		var name = cname + "=";
-		var ca = document.cookie.split(';');
-		for(var i=0; i<ca.length; i++) 
-		{
-			var c = ca[i].trim();
-			if (c.indexOf(name)==0) return c.substring(name.length,c.length);
-		}
-		return "";
-		},
+	},
 	pageSkip(){
 		var obj = this;
 		this.$router.push({path:'/loginSuccess',query:{account:obj.account}})
 	},
-
   	loginForm(){
 		var obj = this;
   		this.$axios({	  
@@ -70,7 +57,6 @@ export default {
 				  password:this.password,
   			}
   		}).then(function(result){
-			  console.log("success");
 			  if(result.data!=''){
 				  var useraccount=result.data.account;
 				  obj.setCookie("useraccount",useraccount);
@@ -79,9 +65,36 @@ export default {
 			  alert("账号或者密码错误")
 			  }
   		}).catch(function(){
-			  alert("sorry,登录出现错误")
+			  alert("未知错误，请稍后再试")
 		})
-  	}
+	},
+	registerForm(){
+		  var obj=this
+		   this.$axios({
+                url:'http://127.0.0.1:8081/register',
+                method:'post',
+                data:{
+                    account:obj.account,
+                    password:obj.password,
+                    name:'',
+                    phone:'',
+                    userrank:3,
+                },
+                dataType:'json'
+        	}).then(function(result){
+                if(result.data!=''){
+					if(result.data.flag==true){
+						 alert("成功注册")
+				  		 obj.setCookie("useraccount",obj.account);
+			  	 		 obj.pageSkip()
+					}
+					if(result.data.flag==false)
+					alert(result.data.msg)
+                }
+            }).catch(function(){
+					alert('未知错误，请稍后再试')
+            })
+	}
   }
 }
 </script>
@@ -93,7 +106,7 @@ body{
 }
 .login{
 	position:absolute;
-	height: 50%;
+	height: 320px;
 	width: 40%;
 	top:25%;
 	left:30%;
